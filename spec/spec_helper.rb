@@ -12,9 +12,15 @@ Spec::Matchers.create :match_gems do |expected|
   match do |actual|
     @_messages = []
     @dump = {}
+
+    if actual.nil?
+      @_messages << "The result is nil"
+      next
+    end
+
     actual.each do |spec|
       unless spec.is_a?(Gem::Specification)
-        @_messages << "#{spec.gem_resolver_inspect} was expected to be a Gem::Specification"
+        @_messages << "#{spec.gem_resolver_inspect} was expected to be a Gem::Specification, but got #{spec.class}"
         next
       end
       @dump[spec.name.to_s] ||= []
