@@ -13,6 +13,7 @@ module GemResolver
       @dependencies.each do |dep|
         if spec = @source_index.search(dep).last
           matches << spec
+          matches += self.class.search_for(spec.dependencies, @source_index)
         else
           raise "Couldn't find match for #{dep}"
         end

@@ -18,7 +18,7 @@ Spec::Matchers.create :contain_gems do |gems|
   end
 
   failure_message_for_should do |source_index|
-    "The source index was expected to have the gems #{gems.sort.inspect}, but got #{@dump.sort.inspect}"
+    "The source index was expected to have the gems #{gems.sort.gem_resolver_inspect}, but got #{@dump.sort.gem_resolver_inspect}"
   end
 end
 
@@ -26,26 +26,26 @@ Spec::Matchers.create :match_gems do |expected|
   match do |actual|
     @_messages = []
     unless expected.size == actual.size
-      @_messages << "Expected there to be #{expected.size} gems in #{actual.inspect}, but got #{actual.size}"
+      @_messages << "Expected there to be #{expected.size} gems in #{actual.gem_resolver_inspect}, but got #{actual.size}"
       next false
     end
 
     @dump = []
     actual.each do |spec|
       unless spec.is_a?(Gem::Specification)
-        @_messages << "#{spec.inspect} was expected to be a Gem::Specification"
+        @_messages << "#{spec.gem_resolver_inspect} was expected to be a Gem::Specification"
         next
       end
       @dump << [spec.name.to_s, spec.version.to_s]
     end
 
     if @_messages.any?
-      @_messages.unshift "The gems #{actual.inspect} were not structured as expected. "
+      @_messages.unshift "The gems #{actual.gem_resolver_inspect} were not structured as expected. "
       next false
     end
 
     unless @dump.sort == expected.sort
-      @_messages << "The source index was expected to have the gems #{actual.sort.inspect}, but got #{@dump.sort.inspect}"
+      @_messages << "The source index was expected to have the gems #{actual.sort.gem_resolver_inspect}, but got #{@dump.sort.gem_resolver_inspect}"
       next false
     end
     true

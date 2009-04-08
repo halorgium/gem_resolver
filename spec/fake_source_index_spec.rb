@@ -23,7 +23,7 @@ module GemResolver
       it "can search for that gem" do
         specs = @index.find_name("foo", "=0.2.2")
         specs.should match_gems([
-          ["foo", "0.2.2"]
+          ["foo", "0.2.2"],
         ])
       end
     end
@@ -50,7 +50,7 @@ module GemResolver
         specs.should match_gems([
           ["foo", "0.2.2"],
           ["foo", "0.3.0"],
-          ["foo", "1.1.0"]
+          ["foo", "1.1.0"],
         ])
       end
     end
