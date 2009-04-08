@@ -7,13 +7,12 @@ module GemResolver
         add_spec "bar", "2.0.0"
       end
 
-      spec = build_spec "meta", "0" do
-        runtime "bar", ">= 1.2.3"
-      end
+      deps = [
+        ["bar", ">= 1.2.3"],
+      ]
 
-      specs = spec.resolved_dependencies_in(index)
+      specs = GemResolver.dependencies_in(index, deps)
       specs.should match_gems(
-        "meta" => ["0"],
         "bar" => ["2.0.0"]
       )
     end
@@ -26,13 +25,12 @@ module GemResolver
         add_spec "foo", "1.1"
       end
 
-      spec = build_spec "meta", "0" do
-        runtime "bar", ">= 1.2.3"
-      end
+      deps = [
+        ["bar", ">= 1.2.3"],
+      ]
 
-      specs = spec.resolved_dependencies_in(index)
+      specs = GemResolver.dependencies_in(index, deps)
       specs.should match_gems(
-        "meta" => ["0"],
         "bar" => ["2.0.0"],
         "foo" => ["1.1"]
       )
@@ -50,14 +48,13 @@ module GemResolver
         add_spec "foo", "1.1"
       end
 
-      spec = build_spec "meta", "0" do
-        runtime "bar", ">= 1.0"
-        runtime "foo", "= 1.0"
-      end
+      deps = [
+        ["bar", ">= 1.0"],
+        ["foo", "= 1.0"],
+      ]
 
-      specs = spec.resolved_dependencies_in(index)
+      specs = GemResolver.dependencies_in(index, deps)
       specs.should match_gems(
-        "meta" => ["0"],
         "bar" => ["1.0"],
         "foo" => ["1.0"]
       )
@@ -66,13 +63,12 @@ module GemResolver
     it "supports merb-core" do
       index = Gem.source_index
 
-      spec = build_spec "meta", "0" do
-        runtime "merb-core", "= 1.0.7.1"
-      end
+      deps = [
+        ["merb-core", "= 1.0.7.1"],
+      ]
 
-      specs = spec.resolved_dependencies_in(index)
+      specs = GemResolver.dependencies_in(index, deps)
       specs.should match_gems(
-        "meta"=>["0"],
         "merb-core"=>["1.0.7.1"],
         "rake"=>["0.8.4"],
         "thor"=>["0.9.9"],
@@ -91,11 +87,11 @@ module GemResolver
         add_spec "a", "1.0"
       end
 
-      spec = build_spec "meta", "0" do
-        runtime "a", "= 1.1"
-      end
+      deps = [
+        ["a", "= 1.1"],
+      ]
 
-      lambda { spec.resolved_dependencies_in(index) }.
+      lambda { GemResolver.dependencies_in(index, deps) }.
         should raise_error(UnableToSatifyDep, "Could not satisfy the dependency: a (= 1.1, runtime)")
     end
   end

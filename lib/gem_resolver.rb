@@ -5,6 +5,7 @@ require 'gem_resolver/specification'
 require 'gem_resolver/dependency'
 require 'gem_resolver/state'
 require 'gem_resolver/attempt'
+require 'gem_resolver/dependency_holder'
 
 require 'set'
 
@@ -27,6 +28,10 @@ module GemResolver
     def initialize(spec, existing_spec)
       super(existing_spec, "Tried to activate #{spec.full_name}, but #{existing_spec.full_name} is already activated")
     end
+  end
+
+  def self.dependencies_in(source_index, dependencies)
+    DependencyHolder.new(dependencies).resolved_dependencies_in(source_index)
   end
 end
 

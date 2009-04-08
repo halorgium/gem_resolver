@@ -38,11 +38,12 @@ module GemResolver
 
     def run
       if existing_spec = root.activated.find {|x| x.name == @spec.name}
-        unless existing_spec == @spec
-          raise Reactivation.new(@spec, existing_spec)
+        if existing_spec == @spec
+          return
         end
+        raise Reactivation.new(@spec, existing_spec)
       end
-      @activated << @spec
+      @activated << @spec unless self == root
       children.each do |child|
         child.resolve
       end
