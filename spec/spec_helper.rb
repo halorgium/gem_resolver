@@ -4,6 +4,8 @@ require 'pp'
 
 require File.dirname(__FILE__) + '/../lib/gem_resolver'
 
+require 'gem_resolver/builders'
+
 Spec::Runner.configure do |config|
   config.include(GemResolver::Builders)
 end
@@ -41,5 +43,17 @@ Spec::Matchers.create :match_gems do |expected|
 
   failure_message_for_should do |actual|
     @_messages.join("\n")
+  end
+end
+
+class Gem::Specification
+  def gem_resolver_inspect
+    to_s
+  end
+end
+
+class Gem::Dependency
+  def gem_resolver_inspect
+    to_s
   end
 end
