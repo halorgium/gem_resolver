@@ -21,7 +21,13 @@ module GemResolver
     end
   end
 
-  def self.resolve(dependencies, source_index, logger = Logger.new($stderr, Logger::DEBUG))
+  def self.resolve(dependencies, source_index, logger = nil)
+    logger = Logger.new($stderr)
+    logger.level = if ENV["GEM_RESOLVER_DEBUG"]
+                     Logger::DEBUG
+                   else
+                     Logger::WARN
+                   end
     Engine.resolve(dependencies, source_index, logger)
   end
 end
