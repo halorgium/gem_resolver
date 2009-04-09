@@ -11,7 +11,7 @@ module GemResolver
         ["bar", ">= 1.2.3"],
       ]
 
-      specs = GemResolver.dependencies_in(index, deps)
+      specs = GemResolver.resolve(deps, index)
       specs.should match_gems(
         "bar" => ["2.0.0"]
       )
@@ -29,7 +29,7 @@ module GemResolver
         ["bar", ">= 1.2.3"],
       ]
 
-      specs = GemResolver.dependencies_in(index, deps)
+      specs = GemResolver.resolve(deps, index)
       specs.should match_gems(
         "bar" => ["2.0.0"],
         "foo" => ["1.1"]
@@ -53,7 +53,7 @@ module GemResolver
         ["foo", "= 1.0"],
       ]
 
-      specs = GemResolver.dependencies_in(index, deps)
+      specs = GemResolver.resolve(deps, index)
       specs.should match_gems(
         "bar" => ["1.0"],
         "foo" => ["1.0"]
@@ -67,7 +67,7 @@ module GemResolver
         ["merb-core", "= 1.0.7.1"],
       ]
 
-      specs = GemResolver.dependencies_in(index, deps)
+      specs = GemResolver.resolve(deps, index)
       specs.should match_gems(
         "merb-core"=>["1.0.7.1"],
         "rake"=>["0.8.4"],
@@ -91,8 +91,8 @@ module GemResolver
         ["a", "= 1.1"],
       ]
 
-      lambda { GemResolver.dependencies_in(index, deps) }.
-        should raise_error(UnableToSatifyDep, "Could not satisfy the dependency: a (= 1.1, runtime)")
+      lambda { GemResolver.resolve(deps, index) }.
+        should raise_error(BadDep, "Couldn't satisfy dependencies: '<top>', 'a (= 1.1, runtime)'")
     end
   end
 end

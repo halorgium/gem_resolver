@@ -1,67 +1,111 @@
 module GemResolver
   class Attempt
-    def self.run(state, spec, source_index)
-      new(state, spec, source_index).run
+    def self.resolve(parent)
+      new(parent).resolve
     end
 
-    def initialize(state, spec, source_index)
-      @state, @spec, @source_index = state, spec, source_index
-      @invalid = []
-      clear
+    def initialize(parent)
+      @parent = parent
+      reset
     end
-    attr_reader :spec, :invalid
+    attr_reader :parent
+
+    def resolve
+      logger.debug "starting to resolve deps: #{dependencies_string}"
+      if child = children.first
+        try(child)
+      else
+        @parent.traverse
+      end
+      logger.debug "finishing to resolve deps: #{dependencies_string}"
+    end
+
+    def try(child)
+      child.resolve
+    rescue BadDep
+      raise unless child.dep == $!.latest_dep
+      logger.warn "Handling the dep which can't be resolved: #{child.dep}"
+      raise BadDep.new(@parent.dep, *$!.deps)
+    end
+
+    def traverse
+      @parent.traverse
+    end
 
     def root
-      @state ? @state.root : self
+      @parent.root
     end
 
-    def clear
-      @activated = Set.new
+    def depth
+      @parent.depth + 1
+    end
+
+    def header
+      output "deps: (#{dependencies.size}) #{dependencies_string}"
+      sub "activated: (#{activated.size}) #{activated.map {|x| x.full_name}.join(', ')}"
+    end
+
+    def tree
+      header
       children.each do |child|
-        child.clear
+        child.tree
       end
     end
 
-    def activated
-      gems = @activated.dup
+    def sub(string)
+      root.sub(string, depth)
+    end
+
+    def output(string)
+      root.output(string, depth)
+    end
+
+    def reset
       children.each do |child|
-        if attempt = child.current_attempt
-          gems += attempt.activated
-        end
+        child.reset
+      end
+    end
+
+    def recursive_dependencies
+      deps = []
+      children.each do |child|
+        deps += child.recursive_dependencies
+      end
+      deps
+    end
+
+    def activated
+      gems = []
+      children.each do |child|
+        gems += child.activated
       end
       gems
     end
 
     def source_index
-      @state ? @state.source_index : @source_index
+      @parent.source_index
     end
 
-    def run
-      if existing_spec = root.activated.find {|x| x.name == @spec.name}
-        if existing_spec == @spec
-          return
-        end
-        raise Reactivation.new(@spec, existing_spec)
-      end
-      @activated << @spec unless self == root
-      children.each do |child|
-        child.resolve
-      end
-      activated.to_a
-    rescue UnableToSatifyDep
-      raise if self == root
-      raise BadSpec.new(@spec)
-    rescue BadSpec
-      raise unless self == root
-      root.clear
-      @invalid << $!.spec
-      retry
+    def first?
+      @parent == root
+    end
+
+    def dependencies
+      @parent.runtime_dependencies
+    end
+
+    def dependencies_string
+      dependencies.map {|x| x.to_s}.join(', ')
     end
 
     def children
-      @children ||= @spec.runtime_dependencies.map do |dep|
+      @children ||= dependencies.map do |dep|
         State.new(self, dep)
       end
+    end
+
+    def logger
+      root.logger
     end
   end
 end

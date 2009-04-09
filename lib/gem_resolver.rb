@@ -1,57 +1,27 @@
 $:.unshift File.dirname(__FILE__)
 
+require 'gem_resolver/engine'
 require 'gem_resolver/state'
 require 'gem_resolver/attempt'
-require 'gem_resolver/dependency_holder'
 
 require 'set'
+require 'logger'
 
 module GemResolver
   class Error < StandardError; end
-  class UnableToSatifyDep < Error; end
-  class SpecError < Error
-    def initialize(spec, message)
-      @spec = spec
-      super(message)
+  class BadDep < Error
+    def initialize(*deps)
+      @deps = deps
+      super("Couldn't satisfy dependencies: #{@deps.map {|x| "'#{x.to_s}'"}.join(', ')}")
     end
-    attr_reader :spec
-  end
-  class BadSpec < SpecError
-    def initialize(spec)
-      super(spec, "Bad spec: #{spec.gem_resolver_inspect}")
-    end
-  end
-  class Reactivation < SpecError
-    def initialize(spec, existing_spec)
-      super(existing_spec, "Tried to activate #{spec.full_name}, but #{existing_spec.full_name} is already activated")
+    attr_reader :deps
+
+    def latest_dep
+      @deps.first
     end
   end
 
-  def self.dependencies_in(source_index, dependencies)
-    DependencyHolder.new(dependencies).resolved_dependencies_in(source_index)
-  end
-end
-
-class Array
-  def gem_resolver_inspect
-    '[' + map {|x| x.gem_resolver_inspect}.join(", ") + ']'
-  end
-end
-
-class Set
-  def gem_resolver_inspect
-    to_a.gem_resolver_inspect
-  end
-end
-
-class Hash
-  def gem_resolver_inspect
-    '{' + map {|k,v| "#{k.gem_resolver_inspect} => #{v.gem_resolver_inspect}"}.join(", ") + '}'
-  end
-end
-
-class String
-  def gem_resolver_inspect
-    inspect
+  def self.resolve(dependencies, source_index, logger = Logger.new($stderr, Logger::DEBUG))
+    Engine.resolve(dependencies, source_index, logger)
   end
 end
