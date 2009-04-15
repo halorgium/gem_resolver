@@ -46,6 +46,12 @@ Spec::Matchers.create :match_gems do |expected|
   end
 end
 
+class Object
+  def gem_resolver_inspect
+    inspect
+  end
+end
+
 class Gem::Specification
   def gem_resolver_inspect
     to_s

@@ -32,7 +32,7 @@ describe "The library itself" do
 
   it "has no malformed whitespace" do
     Dir.chdir(File.dirname(__FILE__) + '/..') do
-      Dir.glob("**/*.rb").each do |filename|
+      `git ls-files`.split("\n").each do |filename|
         filename.should have_no_tab_characters
         filename.should have_no_extraneous_spaces
       end

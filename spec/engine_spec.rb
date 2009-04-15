@@ -92,7 +92,7 @@ module GemResolver
       ]
 
       lambda { GemResolver.resolve(deps, index) }.
-        should raise_error(BadDep, "Couldn't satisfy dependencies: '<top>', 'a (= 1.1, runtime)'")
+        should raise_error(BadDep, "Couldn't satisfy dependencies: 'a (= 1.1, runtime)'")
     end
   end
 end

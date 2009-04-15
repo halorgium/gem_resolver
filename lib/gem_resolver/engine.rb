@@ -1,90 +1,126 @@
 module GemResolver
   class Engine
     def self.resolve(dependencies, source_index, logger)
-      new(dependencies, source_index, logger).run
+      new(dependencies, source_index, logger).resolve
     end
 
     def initialize(dependencies, source_index, logger)
-      @dependencies = dependencies.map {|x| Gem::Dependency.new(*x)}
       @source_index, @logger = source_index, logger
+
+      deps = []
+      dependencies.each do |name,requirements|
+        deps << Gem::Dependency.new(name, requirements)
+      end
+      add(nil, nil, deps)
     end
     attr_reader :source_index, :logger
 
-    def run
-      attempt.resolve
-      activated
+    def resolve
+      logger.debug "starting up"
+      until unmet_deps.empty?
+        dep = unmet_deps.first
+        logger.debug "trying for #{dep}"
+        if gem = gem_for(dep)
+          logger.debug "found gem: #{gem.full_name}"
+          add(dep, gem, gem.runtime_dependencies)
+        end
+      end
+      logger.debug "no deps left"
+      activated_gems
     end
 
-    def attempt
-      @attempt ||= Attempt.new(self)
+    def add(dep, gem, deps)
+      new_deps = []
+      deps.each do |d|
+        new_deps << d unless all_deps.include?(d)
+      end
+      logger.debug "adding new deps: #{new_deps.inspect}"
+      stack << [dep, gem, new_deps]
     end
 
-    def activated
-      attempt.activated
+    def rollback_to(dep)
+      raise BadDep.new(dep) if stack.size == 1
+
+      until stack.last.last.include?(dep)
+        logger.debug "about to pop #{stack.last.inspect}"
+        dep, gem, deps = stack.pop
+      end
+
+      logger.debug "about to invalidate #{gem.full_name}"
+      invalid_gems << gem
     end
 
-    def recursive_dependencies
-      attempt.recursive_dependencies
+    def gem_for(dep)
+      matches = source_index.search(dep).reverse
+      gems = (matches - invalid_gems).select do |gem|
+        compatible_with_deps?(gem)
+      end
+
+      return gems.first if gems.first
+
+      rollback_to(dep)
+      false
     end
 
-    def runtime_dependencies
-      @dependencies.select {|x| x.type == :runtime}
+    def compatible_with_deps?(gem)
+      deps_matching(gem.name).all? do |dep|
+        gem.satisfies_requirement?(dep)
+      end
     end
 
-    def find_by_name(name)
-      activated.find {|x| x.name == name}
+    def unmet_deps
+      all_deps - satisfied_deps
     end
 
-    def root
-      self
+    def all_deps
+      all_deps = []
+      stack.each do |dep,gem,deps|
+        all_deps += deps
+      end
+      all_deps
     end
 
-    def depth
-      0
+    def activated_gems
+      activated_gems = []
+      stack.each do |dep,gem,deps|
+        activated_gems << gem if gem
+      end
+      activated_gems
     end
 
-    def tree
-      logger.debug "=" * 80
-      logger.debug "| Tree"
-      logger.debug "=" * 80
-      logger.debug "activated: (#{activated.size}) #{activated.map {|x| x.full_name}.join(', ')}"
-      logger.debug "deps: (#{recursive_dependencies.size}) #{recursive_dependencies.map {|x| x.to_s}.join(', ')}"
-      logger.debug "invalid: (#{invalid.size}) #{invalid.map {|x| x.full_name}.join(', ')}"
-      logger.debug "-" * 80
-      attempt.tree
-      logger.debug "=" * 80
+    def satisfied_deps
+      satisfied_deps = []
+      stack.each do |dep,gem,deps|
+        satisfied_deps << dep if dep
+      end
+      satisfied_deps
     end
 
-    def sub(string, depth)
-      spacer = '|   ' * depth + '\--> '
-      logger.debug spacer + string
+    def deps_matching(name)
+      all_deps.select do |dep|
+        dep.name == name
+      end
     end
 
-    def output(string, depth)
-      spacer = '|   ' * (depth - 1) + '\---'
-      logger.debug spacer + string
+    def dump
+      puts "*" * 80
+      puts "stack is"
+      stack.each do |dep,gem,deps|
+        puts "#{dep || "<top>"} --> #{gem && gem.full_name || "<top>"}"
+        deps.each do |d|
+          puts "-> #{d}"
+        end
+        puts "-" * 80
+      end
+      puts "*" * 80
     end
 
-    def dep
-      '<top>'
+    def invalid_gems
+      @invalid_gems ||= []
     end
 
-    def traverse
-      logger.debug "the results are: "
-      logger.debug "activated: (#{activated.size}) #{activated.map {|x| x.full_name}.join(', ')}"
-    end
-
-    def invalidate(spec)
-      logger.debug "invalidating #{spec.full_name}"
-      invalid << spec
-    end
-
-    def invalid
-      @invalid ||= Set.new
-    end
-
-    def reset
-      @invalid = nil
+    def stack
+      @stack ||= []
     end
   end
 end

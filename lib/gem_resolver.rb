@@ -1,10 +1,7 @@
 $:.unshift File.dirname(__FILE__)
 
 require 'gem_resolver/engine'
-require 'gem_resolver/state'
-require 'gem_resolver/attempt'
 
-require 'set'
 require 'logger'
 
 module GemResolver
@@ -21,7 +18,7 @@ module GemResolver
     end
   end
 
-  def self.resolve(dependencies, source_index, logger = nil)
+  def self.resolve(dependencies, source_index = Gem.source_index, logger = nil)
     logger = Logger.new($stderr)
     logger.level = if ENV["GEM_RESOLVER_DEBUG"]
                      Logger::DEBUG
