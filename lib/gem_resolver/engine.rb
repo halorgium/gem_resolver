@@ -39,7 +39,9 @@ module GemResolver
     end
 
     def rollback_to(dep)
-      raise BadDep.new(dep) if stack.size == 1
+      if stack.size == 1
+        raise BadDep.new(dep)
+      end
 
       until stack.last.last.include?(dep)
         logger.debug "about to pop #{stack.last.inspect}"
@@ -69,7 +71,11 @@ module GemResolver
     end
 
     def unmet_deps
-      all_deps - satisfied_deps
+      all_deps.reject do |dep|
+        activated_gems.any? do |gem|
+          gem.satisfies_requirement?(dep)
+        end
+      end
     end
 
     def all_deps
@@ -86,14 +92,6 @@ module GemResolver
         activated_gems << gem if gem
       end
       activated_gems
-    end
-
-    def satisfied_deps
-      satisfied_deps = []
-      stack.each do |dep,gem,deps|
-        satisfied_deps << dep if dep
-      end
-      satisfied_deps
     end
 
     def deps_matching(name)
