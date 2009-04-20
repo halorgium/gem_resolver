@@ -40,7 +40,7 @@ module GemResolver
       specs = @engine.source_index.search(dep)
       if specs.empty?
         logger.error "no specs matching #{specs.gem_resolver_inspect}"
-        raise
+        raise "No specs matching #{dep}"
       end
 
       specs.each do |s|
@@ -131,6 +131,29 @@ module GemResolver
         logger.add level, "#{path.inspect}: #{spec.gem_resolver_inspect}"
       end
       logger.add level, "^" * 80
+    end
+
+    def to_dot
+      io = StringIO.new
+      io.puts 'digraph deps {'
+      io.puts '  fontname = "Courier";'
+      io.puts '  mincross = 4.0;'
+      io.puts '  ratio = "auto";'
+      dump_to_dot(io, "<top>", [])
+      io.puts '}'
+      io.string
+    end
+
+    def dump_to_dot(io, name, path)
+      @dep_stack[path].each_with_index do |dep,i|
+        new_path = path + [i]
+        spec_name = all_specs.find {|x| x.name == dep.name}.full_name
+        io.puts '  "%s" -> "%s";' % [name, dep.to_s]
+        if @spec_stack.key?(new_path)
+          io.puts '  "%s" -> "%s";' % [dep.to_s, spec_name]
+          dump_to_dot(io, spec_name, new_path)
+        end
+      end
     end
   end
 end

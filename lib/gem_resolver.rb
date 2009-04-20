@@ -5,6 +5,8 @@ require 'logger'
 require 'gem_resolver/stack'
 require 'gem_resolver/engine'
 require 'gem_resolver/state'
+require 'gem_resolver/builders'
+require 'gem_resolver/inspects'
 
 module GemResolver
   def self.resolve(deps, source_index = Gem.source_index, logger = nil)
@@ -15,6 +17,6 @@ module GemResolver
                    else
                      Logger::WARN
                    end
-    Engine.resolve(deps, source_index, logger)
+    Engine.resolve(deps, source_index, logger).all_specs
   end
 end

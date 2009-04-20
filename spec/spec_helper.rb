@@ -4,8 +4,6 @@ require 'pp'
 
 require File.dirname(__FILE__) + '/../lib/gem_resolver'
 
-require 'gem_resolver/builders'
-
 module GemResolver
   module SourceIndexHacks
     def to_dsl
@@ -67,48 +65,5 @@ Spec::Matchers.create :match_gems do |expected|
 
   failure_message_for_should do |actual|
     @_messages.join("\n")
-  end
-end
-
-class Object
-  def gem_resolver_inspect
-    inspect
-  end
-end
-
-class Gem::Specification
-  def gem_resolver_inspect
-    "#<Spec: #{full_name}>"
-  end
-end
-
-class Gem::Dependency
-  def gem_resolver_inspect
-    "#<Dep: #{to_s}>"
-  end
-end
-
-class Array
-  def gem_resolver_inspect
-    '[' + map {|x| x.gem_resolver_inspect}.join(", ") + ']'
-  end
-end
-
-require 'set'
-class Set
-  def gem_resolver_inspect
-    to_a.gem_resolver_inspect
-  end
-end
-
-class Hash
-  def gem_resolver_inspect
-    '{' + map {|k,v| "#{k.gem_resolver_inspect} => #{v.gem_resolver_inspect}"}.join(", ") + '}'
-  end
-end
-
-class String
-  def gem_resolver_inspect
-    inspect
   end
 end
