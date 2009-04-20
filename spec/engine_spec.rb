@@ -36,9 +36,9 @@ module GemResolver
       
       specs = GemResolver.resolve(deps, index)
       specs.should match_gems(
-        "activemerchant" => "1.4.1",
-        "action_pack" => "2.3.2",
-        "activesupport" => "2.3.2"
+        "activemerchant" => ["1.4.1"],
+        "action_pack" => ["2.3.2"],
+        "activesupport" => ["2.3.2"]
       )
     end
 
