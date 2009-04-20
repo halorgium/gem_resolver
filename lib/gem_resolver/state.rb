@@ -14,8 +14,19 @@ module GemResolver
     def goal_met?
       logger.info "checking if goal is met"
       dump
+      no_duplicates?
       all_deps.all? do |dep|
         dependency_satisfied?(dep)
+      end
+    end
+
+    def no_duplicates?
+      names = []
+      all_specs.each do |s|
+        if names.include?(s.name)
+          raise "somehow got duplicates for #{s.name}"
+        end
+        names << s.name
       end
     end
 
@@ -75,9 +86,10 @@ module GemResolver
     end
 
     def remaining_deps_for(path)
+      no_duplicates?
       remaining = []
       @dep_stack[path].each_with_index do |dep,i|
-        remaining << [i, dep] unless dependency_satisfied?(dep)
+        remaining << [i, dep] unless all_specs.find {|s| s.name == dep.name}
       end
       remaining
     end
