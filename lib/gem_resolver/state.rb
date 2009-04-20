@@ -40,7 +40,7 @@ module GemResolver
       specs = @engine.source_index.search(dep)
       if specs.empty?
         logger.error "no specs matching #{specs.gem_resolver_inspect}"
-        raise "No specs matching #{dep}"
+        raise NoSpecs, "No specs matching #{dep}"
       end
 
       specs.each do |s|
@@ -149,8 +149,8 @@ module GemResolver
         new_path = path + [i]
         spec_name = all_specs.find {|x| x.name == dep.name}.full_name
         io.puts '  "%s" -> "%s";' % [name, dep.to_s]
+        io.puts '  "%s" -> "%s";' % [dep.to_s, spec_name]
         if @spec_stack.key?(new_path)
-          io.puts '  "%s" -> "%s";' % [dep.to_s, spec_name]
           dump_to_dot(io, spec_name, new_path)
         end
       end

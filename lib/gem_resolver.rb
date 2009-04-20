@@ -9,6 +9,8 @@ require 'gem_resolver/builders'
 require 'gem_resolver/inspects'
 
 module GemResolver
+  class NoSpecs < StandardError; end
+
   def self.resolve(deps, source_index = Gem.source_index, logger = nil)
     logger = Logger.new($stderr)
     logger.datetime_format = ""
