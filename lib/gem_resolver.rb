@@ -9,6 +9,7 @@ require 'gem_resolver/state'
 module GemResolver
   def self.resolve(deps, source_index = Gem.source_index, logger = nil)
     logger = Logger.new($stderr)
+    logger.datetime_format = ""
     logger.level = if ENV["GEM_RESOLVER_DEBUG"]
                      Logger::DEBUG
                    else

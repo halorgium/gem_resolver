@@ -32,7 +32,7 @@ module GemResolver
       end
 
       logger.debug "working on #{dep}"
-      @engine.source_index.search(dep).each do |spec|
+      @engine.source_index.search(dep).reverse.each do |spec|
         logger.debug "got a spec: #{spec.full_name}"
         new_path = @path + [index]
         new_spec_stack = @spec_stack.dup
@@ -87,14 +87,14 @@ module GemResolver
       end
       logger.debug "dep_stack: "
       @dep_stack.each do |path,deps|
-        logger.debug "@ #{path.inspect}"
+        logger.debug "#{path.inspect} (#{deps.size})"
         deps.each do |dep|
-          logger.debug dep.gem_resolver_inspect
+          logger.debug "-> #{dep.gem_resolver_inspect}"
         end
       end
       logger.debug "spec_stack: "
       @spec_stack.each do |path,spec|
-        logger.debug "@ #{path.inspect}: #{spec.gem_resolver_inspect}"
+        logger.debug "#{path.inspect}: #{spec.gem_resolver_inspect}"
       end
       logger.debug "^" * 80
     end
