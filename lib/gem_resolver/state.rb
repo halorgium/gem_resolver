@@ -26,37 +26,43 @@ module GemResolver
     end
 
     def each_possibility(&block)
-      logger.info "getting possibilities"
-      dump
       index, dep = remaining_deps.first
-
       if dep
-        if dependency_satisfied?(dep)
-          jump_to_parent(&block)
-        else
-          handle_dep(index, dep, &block)
-        end
+        logger.warn "working on #{dep} for #{spec_name}"
+        handle_dep(index, dep, &block)
       else
+        logger.warn "no dependencies left for #{spec_name}"
         jump_to_parent(&block)
       end
     end
 
     def handle_dep(index, dep)
-      logger.warn "working on #{dep}"
-      @engine.source_index.search(dep).reverse.each do |spec|
-        logger.warn "got a spec: #{spec.full_name}"
+      specs = @engine.source_index.search(dep)
+      if specs.empty?
+        logger.error "no specs matching #{specs.gem_resolver_inspect}"
+        raise
+      end
+
+      specs.each do |s|
+        logger.info "attempting with spec: #{s.full_name}"
         new_path = @path + [index]
         new_spec_stack = @spec_stack.dup
         new_dep_stack = @dep_stack.dup
 
-        new_spec_stack[new_path] = spec
-        new_dep_stack[new_path] = spec.runtime_dependencies
+        new_spec_stack[new_path] = s
+        new_dep_stack[new_path] = s.runtime_dependencies
         yield child(@engine, new_path, new_spec_stack, new_dep_stack)
       end
     end
 
     def jump_to_parent
-      logger.info "Ending"
+      if @path.empty?
+        dump
+        logger.warn "at the end"
+        return
+      end
+
+      logger.info "jumping to parent for #{spec_name}"
       new_path = @path[0..-2]
       new_spec_stack = @spec_stack.dup
       new_dep_stack = @dep_stack.dup
@@ -71,13 +77,21 @@ module GemResolver
     def remaining_deps_for(path)
       remaining = []
       @dep_stack[path].each_with_index do |dep,i|
-        remaining << [i, dep] unless @spec_stack.key?(path + [i])
+        remaining << [i, dep] unless dependency_satisfied?(dep)
       end
       remaining
     end
 
     def deps
       @dep_stack[@path]
+    end
+
+    def spec
+      @spec_stack[@path]
+    end
+
+    def spec_name
+      @path.empty? ? "<top>" : spec.full_name
     end
 
     def all_deps
@@ -94,29 +108,29 @@ module GemResolver
       end
     end
 
-    def dump
-      logger.debug "v" * 80
-      logger.debug "path: #{@path.inspect}"
-      logger.debug "deps: (#{deps.size})"
+    def dump(level = Logger::DEBUG)
+      logger.add level, "v" * 80
+      logger.add level, "path: #{@path.inspect}"
+      logger.add level, "deps: (#{deps.size})"
       deps.map do |dep|
-        logger.debug dep.gem_resolver_inspect
+        logger.add level, dep.gem_resolver_inspect
       end
-      logger.debug "remaining_deps: (#{remaining_deps.size})"
+      logger.add level, "remaining_deps: (#{remaining_deps.size})"
       remaining_deps.each do |dep|
-        logger.debug dep.gem_resolver_inspect
+        logger.add level, dep.gem_resolver_inspect
       end
-      logger.debug "dep_stack: "
+      logger.add level, "dep_stack: "
       @dep_stack.each do |path,deps|
-        logger.debug "#{path.inspect} (#{deps.size})"
+        logger.add level, "#{path.inspect} (#{deps.size})"
         deps.each do |dep|
-          logger.debug "-> #{dep.gem_resolver_inspect}"
+          logger.add level, "-> #{dep.gem_resolver_inspect}"
         end
       end
-      logger.debug "spec_stack: "
+      logger.add level, "spec_stack: "
       @spec_stack.each do |path,spec|
-        logger.debug "#{path.inspect}: #{spec.gem_resolver_inspect}"
+        logger.add level, "#{path.inspect}: #{spec.gem_resolver_inspect}"
       end
-      logger.debug "^" * 80
+      logger.add level, "^" * 80
     end
   end
 end

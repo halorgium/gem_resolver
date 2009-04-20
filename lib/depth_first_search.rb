@@ -12,7 +12,7 @@ module DepthFirstSearch
     open << initial
 
     while open.any?
-      n = open.shift
+      n = open.pop
       closed << n
 
       n.each_possibility do |attempt|

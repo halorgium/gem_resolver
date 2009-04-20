@@ -6,6 +6,30 @@ require File.dirname(__FILE__) + '/../lib/gem_resolver'
 
 require 'gem_resolver/builders'
 
+module GemResolver
+  module SourceIndexHacks
+    def to_dsl
+      content = ""
+      content << "@index = build_index do\n"
+      each do |name,spec|
+        content << '  add_spec "%s", "%s"' % [spec.name, spec.version]
+        deps = spec.runtime_dependencies
+        if deps.any?
+          content << " do\n"
+          deps.each do |dep|
+            reqs = dep.version_requirements.requirements.map {|r| r.to_s}.inspect
+            content << "    runtime \"%s\", %s\n" % [dep.name, reqs]
+          end
+          content << "  end"
+        end
+        content << "\n"
+      end
+      content << "end\n"
+      content
+    end
+  end
+end
+
 Spec::Runner.configure do |config|
   config.include(GemResolver::Builders)
 end
