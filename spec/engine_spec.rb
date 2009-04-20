@@ -30,7 +30,7 @@ module GemResolver
       end
       
       deps = [
-        build_dep("activemechant", ">= 0"),
+        build_dep("activemerchant", ">= 0"),
         build_dep("action_pack", "= 2.3.2")
       ]
       
