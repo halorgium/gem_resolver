@@ -21,31 +21,6 @@ module GemResolver
       end
     end
 
-    def dump
-      logger.debug "v" * 80
-      logger.debug "path: #{@path.inspect}"
-      logger.debug "deps: (#{deps.size})"
-      deps.map do |dep|
-        logger.debug dep.gem_resolver_inspect
-      end
-      logger.debug "remaining_deps: (#{remaining_deps.size})"
-      remaining_deps.each do |dep|
-        logger.debug dep.gem_resolver_inspect
-      end
-      logger.debug "dep_stack: "
-      @dep_stack.each do |path,deps|
-        logger.debug "@ #{path.inspect}"
-        deps.each do |dep|
-          logger.debug dep.gem_resolver_inspect
-        end
-      end
-      logger.debug "spec_stack: "
-      @spec_stack.each do |path,spec|
-        logger.debug "@ #{path.inspect}: #{spec.gem_resolver_inspect}"
-      end
-      logger.debug "^" * 80
-    end
-
     def each_possibility
       logger.debug "getting possibilities"
       dump
@@ -97,6 +72,31 @@ module GemResolver
       @spec_stack.map do |path,spec|
         spec
       end
+    end
+
+    def dump
+      logger.debug "v" * 80
+      logger.debug "path: #{@path.inspect}"
+      logger.debug "deps: (#{deps.size})"
+      deps.map do |dep|
+        logger.debug dep.gem_resolver_inspect
+      end
+      logger.debug "remaining_deps: (#{remaining_deps.size})"
+      remaining_deps.each do |dep|
+        logger.debug dep.gem_resolver_inspect
+      end
+      logger.debug "dep_stack: "
+      @dep_stack.each do |path,deps|
+        logger.debug "@ #{path.inspect}"
+        deps.each do |dep|
+          logger.debug dep.gem_resolver_inspect
+        end
+      end
+      logger.debug "spec_stack: "
+      @spec_stack.each do |path,spec|
+        logger.debug "@ #{path.inspect}: #{spec.gem_resolver_inspect}"
+      end
+      logger.debug "^" * 80
     end
   end
 end
