@@ -24,10 +24,25 @@ module GemResolver
     def dump
       logger.debug "v" * 80
       logger.debug "path: #{@path.inspect}"
-      logger.debug "deps: #{deps.gem_resolver_inspect}"
-      logger.debug "remaining_deps: #{remaining_deps.gem_resolver_inspect}"
-      logger.debug "dep_stack: #{@dep_stack.gem_resolver_inspect}"
-      logger.debug "spec_stack: #{@spec_stack.gem_resolver_inspect}"
+      logger.debug "deps: (#{deps.size})"
+      deps.map do |dep|
+        logger.debug dep.gem_resolver_inspect
+      end
+      logger.debug "remaining_deps: (#{remaining_deps.size})"
+      remaining_deps.each do |dep|
+        logger.debug dep.gem_resolver_inspect
+      end
+      logger.debug "dep_stack: "
+      @dep_stack.each do |path,deps|
+        logger.debug "@ #{path.inspect}"
+        deps.each do |dep|
+          logger.debug dep.gem_resolver_inspect
+        end
+      end
+      logger.debug "spec_stack: "
+      @spec_stack.each do |path,spec|
+        logger.debug "@ #{path.inspect}: #{spec.gem_resolver_inspect}"
+      end
       logger.debug "^" * 80
     end
 
@@ -37,7 +52,7 @@ module GemResolver
       index, dep = remaining_deps.first
 
       unless dep
-        yield self
+        logger.debug "Ending"
         return
       end
 
@@ -67,7 +82,7 @@ module GemResolver
     end
 
     def deps
-      @dep_stack.last
+      @dep_stack[@path]
     end
 
     def all_deps
