@@ -50,7 +50,7 @@ module GemResolver
     def handle_dep(index, dep)
       specs = @engine.source_index.search(dep)
       if specs.empty?
-        logger.error "no specs matching #{specs.gem_resolver_inspect}"
+        logger.error "no specs matching #{dep}"
         raise NoSpecs, "No specs matching #{dep}"
       end
 
