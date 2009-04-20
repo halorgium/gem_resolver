@@ -12,33 +12,39 @@ module GemResolver
     end
 
     def goal_met?
-      logger.debug "checking if goal is met"
+      logger.info "checking if goal is met"
       dump
       all_deps.all? do |dep|
-        all_specs.any? do |spec|
-          spec.satisfies_requirement?(dep)
-        end
+        dependency_satisfied?(dep)
       end
     end
 
-    def each_possibility
-      logger.debug "getting possibilities"
+    def dependency_satisfied?(dep)
+      all_specs.any? do |spec|
+        spec.satisfies_requirement?(dep)
+      end
+    end
+
+    def each_possibility(&block)
+      logger.info "getting possibilities"
       dump
       index, dep = remaining_deps.first
 
-      unless dep
-        logger.debug "Ending"
-        new_path = @path[0..-2]
-        new_spec_stack = @spec_stack.dup
-        new_dep_stack = @dep_stack.dup
-
-        yield child(@engine, new_path, new_spec_stack, new_dep_stack)
-        return
+      if dep
+        if dependency_satisfied?(dep)
+          jump_to_parent(&block)
+        else
+          handle_dep(index, dep, &block)
+        end
+      else
+        jump_to_parent(&block)
       end
+    end
 
-      logger.debug "working on #{dep}"
+    def handle_dep(index, dep)
+      logger.warn "working on #{dep}"
       @engine.source_index.search(dep).reverse.each do |spec|
-        logger.debug "got a spec: #{spec.full_name}"
+        logger.warn "got a spec: #{spec.full_name}"
         new_path = @path + [index]
         new_spec_stack = @spec_stack.dup
         new_dep_stack = @dep_stack.dup
@@ -47,6 +53,15 @@ module GemResolver
         new_dep_stack[new_path] = spec.runtime_dependencies
         yield child(@engine, new_path, new_spec_stack, new_dep_stack)
       end
+    end
+
+    def jump_to_parent
+      logger.info "Ending"
+      new_path = @path[0..-2]
+      new_spec_stack = @spec_stack.dup
+      new_dep_stack = @dep_stack.dup
+
+      yield child(@engine, new_path, new_spec_stack, new_dep_stack)
     end
 
     def remaining_deps
