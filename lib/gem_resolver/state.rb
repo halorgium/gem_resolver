@@ -28,6 +28,11 @@ module GemResolver
 
       unless dep
         logger.debug "Ending"
+        new_path = @path[0..-2]
+        new_spec_stack = @spec_stack.dup
+        new_dep_stack = @dep_stack.dup
+
+        yield child(@engine, new_path, new_spec_stack, new_dep_stack)
         return
       end
 
