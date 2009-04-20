@@ -116,9 +116,8 @@ module GemResolver
         build_dep("a", "= 1.1"),
       ]
 
-      GemResolver.resolve(deps, index)
-      #lambda { GemResolver.resolve(deps, index) }.
-      #  should raise_error(BadDep, "Couldn't satisfy dependencies: 'a (= 1.1, runtime)'")
+      lambda { GemResolver.resolve(deps, index) }.
+        should raise_error(::GemResolver::NoSpecs, "No specs matching a (= 1.1, runtime)")
     end
   end
 end
