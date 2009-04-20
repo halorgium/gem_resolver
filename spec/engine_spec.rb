@@ -16,7 +16,7 @@ module GemResolver
         "bar" => ["2.0.0"]
       )
     end
-    
+
     it "supports a crazy case" do
       index = build_index do
         add_spec "activemerchant", "1.4.1" do
@@ -28,12 +28,12 @@ module GemResolver
           runtime "activesupport", "= 2.3.2"
         end
       end
-      
+
       deps = [
         build_dep("activemerchant", ">= 0"),
         build_dep("action_pack", "= 2.3.2")
       ]
-      
+
       specs = GemResolver.resolve(deps, index)
       specs.should match_gems(
         "activemerchant" => ["1.4.1"],
