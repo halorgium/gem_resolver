@@ -7,7 +7,6 @@ module DepthFirstSearch
     end
 
     open = []
-    closed = Set.new
 
     open << initial
 

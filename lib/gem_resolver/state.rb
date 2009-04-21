@@ -7,6 +7,10 @@ module GemResolver
       @engine, @path, @spec_stack, @dep_stack = engine, path, spec_stack, dep_stack
     end
 
+    def ==(other)
+      all_specs == other.all_specs
+    end
+
     def logger
       @engine.logger
     end
