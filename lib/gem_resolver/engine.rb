@@ -1,8 +1,16 @@
 module GemResolver
   class ClosedSet < Set
     def include?(state)
+      match = nil
       self.any? do |s|
-        state == s
+        state == s && match = s
+      end
+      if match
+        state.logger.warn "already includes #{state.path.inspect} at #{match.path.inspect}"
+        match.logger.warn "existing"
+        match.dump(Logger::WARN)
+        state.logger.warn "new"
+        state.dump(Logger::WARN)
       end
     end
   end
@@ -26,6 +34,10 @@ module GemResolver
       logger.info "got the solution with #{solution.all_specs.size} specs"
       solution.dump(Logger::INFO)
       solution
+    end
+
+    def open
+      @open ||= []
     end
 
     def closed

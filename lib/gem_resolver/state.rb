@@ -6,6 +6,7 @@ module GemResolver
       super(depth)
       @engine, @path, @spec_stack, @dep_stack = engine, path, spec_stack, dep_stack
     end
+    attr_reader :path
 
     def ==(other)
       all_specs == other.all_specs

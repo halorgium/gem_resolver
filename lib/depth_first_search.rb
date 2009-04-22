@@ -6,25 +6,37 @@ module DepthFirstSearch
       return initial
     end
 
-    open = []
-
     open << initial
 
     while open.any?
-      n = open.pop
-      closed << n
+      @current = open.pop
+      #puts "*" * 80
+      puts "%3d, %-80s | %-30s, %3d : %s" % [open.size, "*" * open.size, @current.path.join(", "), @current.depth, "!" * @current.depth]
+      #puts "*" * 80
+      closed << @current
 
-      n.each_possibility do |attempt|
-        unless closed.include?(attempt)
-          if attempt.goal_met?
-            return attempt
-          elsif attempt.depth < max_depth
-            open << attempt
+      @current.each_possibility do |@attempt|
+        unless closed.include?(@attempt)
+          if @attempt.goal_met?
+            return @attempt
+          elsif @attempt.depth < max_depth
+            open << @attempt
           end
+        else
+          open << @attempt
         end
       end
     end
     raise "no solution"
+  end
+  attr_reader :current, :attempt
+
+  def open
+    raise "implement #open in #{self.class}"
+  end
+
+  def closed
+    raise "implement #closed in #{self.class}"
   end
 
   module Node
