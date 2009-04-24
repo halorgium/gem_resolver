@@ -1,12 +1,4 @@
 module GemResolver
-  class ClosedSet < Set
-    def include?(state)
-      self.any? do |s|
-        state == s
-      end
-    end
-  end
-
   class Engine
     include DepthFirstSearch
 
@@ -26,10 +18,6 @@ module GemResolver
       logger.info "got the solution with #{solution.all_specs.size} specs"
       solution.dump(Logger::INFO)
       solution
-    end
-
-    def closed
-      @closed ||= ClosedSet.new
     end
   end
 end
