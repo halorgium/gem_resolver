@@ -12,13 +12,15 @@ module GemResolver
   class NoSpecs < StandardError; end
 
   def self.resolve(deps, source_index = Gem.source_index, logger = nil)
-    logger = Logger.new($stderr)
-    logger.datetime_format = ""
-    logger.level = if ENV["GEM_RESOLVER_DEBUG"]
-                     Logger::DEBUG
-                   else
-                     Logger::WARN
-                   end
+    unless logger
+      logger = Logger.new($stderr)
+      logger.datetime_format = ""
+      logger.level = if ENV["GEM_RESOLVER_DEBUG"]
+                       Logger::DEBUG
+                     else
+                       Logger::WARN
+                     end
+    end
     Engine.resolve(deps, source_index, logger).all_specs
   end
 end
