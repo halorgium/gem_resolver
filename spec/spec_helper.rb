@@ -57,7 +57,10 @@ Spec::Matchers.create :match_gems do |expected|
     end
 
     unless @dump == expected
-      @_messages << "The source index was expected to have the gems #{expected.inspect}, but got #{@dump.inspect}"
+      @_messages << "The source index was expected to have the gems:"
+      @_messages << expected.to_a.sort.pretty_inspect
+      @_messages << "but got:"
+      @_messages << @dump.to_a.sort.pretty_inspect
       next false
     end
     true

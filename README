@@ -1,0 +1,5 @@
+Gem Resolver
+
+It's a depth first search implementation for best-effort version resolution.
+
+It tries to resolve a set of dependencies in order to avoid activation errors when gems are loaded in the "wrong" order.

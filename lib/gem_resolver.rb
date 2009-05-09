@@ -9,8 +9,6 @@ require 'gem_resolver/builders'
 require 'gem_resolver/inspects'
 
 module GemResolver
-  class NoSpecs < StandardError; end
-
   def self.resolve(deps, source_index = Gem.source_index, logger = nil)
     unless logger
       logger = Logger.new($stderr)
@@ -18,9 +16,9 @@ module GemResolver
       logger.level = if ENV["GEM_RESOLVER_DEBUG"]
                        Logger::DEBUG
                      else
-                       Logger::WARN
+                       Logger::ERROR
                      end
     end
-    Engine.resolve(deps, source_index, logger).all_specs
+    Engine.resolve(deps, source_index, logger)
   end
 end

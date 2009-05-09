@@ -50,19 +50,17 @@ module GemResolver
 
     def handle_dep(index, dep)
       specs = @engine.source_index.search(dep)
-      if specs.empty?
-        logger.error "no specs matching #{dep}"
-        raise NoSpecs, "No specs matching #{dep}"
-      end
 
-      specs.each do |s|
+      specs.reverse.each do |s|
         logger.info "attempting with spec: #{s.full_name}"
         new_path = @path + [index]
         new_spec_stack = @spec_stack.dup
         new_dep_stack = @dep_stack.dup
 
         new_spec_stack[new_path] = s
-        new_dep_stack[new_path] = s.runtime_dependencies
+        new_dep_stack[new_path] = s.runtime_dependencies.sort_by do |dep|
+          @engine.source_index.search(dep).size
+        end
         yield child(@engine, new_path, new_spec_stack, new_dep_stack)
       end
     end

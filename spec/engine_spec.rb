@@ -11,8 +11,8 @@ module GemResolver
         build_dep("bar", ">= 1.2.3"),
       ]
 
-      specs = GemResolver.resolve(deps, index)
-      specs.should match_gems(
+      solution = GemResolver.resolve(deps, index)
+      solution.all_specs.should match_gems(
         "bar" => ["2.0.0"]
       )
     end
@@ -34,8 +34,8 @@ module GemResolver
         build_dep("action_pack", "= 2.3.2")
       ]
 
-      specs = GemResolver.resolve(deps, index)
-      specs.should match_gems(
+      solution = GemResolver.resolve(deps, index)
+      solution.all_specs.should match_gems(
         "activemerchant" => ["1.4.1"],
         "action_pack" => ["2.3.2"],
         "activesupport" => ["2.3.2"]
@@ -54,8 +54,8 @@ module GemResolver
         build_dep("bar", ">= 1.2.3"),
       ]
 
-      specs = GemResolver.resolve(deps, index)
-      specs.should match_gems(
+      solution = GemResolver.resolve(deps, index)
+      solution.all_specs.should match_gems(
         "bar" => ["2.0.0"],
         "foo" => ["1.1"]
       )
@@ -78,8 +78,8 @@ module GemResolver
         build_dep("foo", "= 1.0"),
       ]
 
-      specs = GemResolver.resolve(deps, index)
-      specs.should match_gems(
+      solution = GemResolver.resolve(deps, index)
+      solution.all_specs.should match_gems(
         "bar" => ["1.0"],
         "foo" => ["1.0"]
       )
@@ -92,15 +92,15 @@ module GemResolver
         build_dep("merb-core", "= 1.0.7.1"),
       ]
 
-      specs = GemResolver.resolve(deps, index)
-      specs.should match_gems(
+      solution = GemResolver.resolve(deps, index)
+      solution.all_specs.should match_gems(
         "merb-core"=>["1.0.7.1"],
         "rake"=>["0.8.4"],
         "thor"=>["0.9.9"],
         "rspec"=>["1.2.2"],
         "mime-types"=>["1.16"],
         "abstract"=>["1.0.0"],
-        "rack"=>["0.9.1"],
+        "rack"=>["1.0.0"],
         "erubis"=>["2.6.2"],
         "extlib"=>["0.9.11"],
         "json_pure"=>["1.1.3"]
@@ -116,8 +116,7 @@ module GemResolver
         build_dep("a", "= 1.1"),
       ]
 
-      lambda { GemResolver.resolve(deps, index) }.
-        should raise_error(::GemResolver::NoSpecs, "No specs matching a (= 1.1, runtime)")
+      GemResolver.resolve(deps, index).should be_nil
     end
   end
 end

@@ -17,10 +17,11 @@ module GemResolver
 
     def resolve
       state = State.initial(self, [], Stack.new, Stack.new([[[], @deps.dup]]))
-      solution = search(state)
-      logger.info "got the solution with #{solution.all_specs.size} specs"
-      solution.dump(Logger::INFO)
-      solution
+      if solution = search(state)
+        logger.info "got the solution with #{solution.all_specs.size} specs"
+        solution.dump(Logger::INFO)
+        solution
+      end
     end
 
     def open
