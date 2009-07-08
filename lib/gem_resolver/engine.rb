@@ -5,15 +5,15 @@ module GemResolver
   class Engine
     include DepthFirstSearch
 
-    def self.resolve(deps, source_index, logger)
-      new(deps, source_index, logger).resolve
+    def self.resolve(dependency_types, deps, source_index, logger)
+      new(dependency_types, deps, source_index, logger).resolve
     end
 
-    def initialize(deps, source_index, logger)
-      @deps, @source_index, @logger = deps, source_index, logger
+    def initialize(dependency_types, deps, source_index, logger)
+      @dependency_types, @deps, @source_index, @logger = dependency_types, deps, source_index, logger
       logger.debug "searching for #{@deps.gem_resolver_inspect}"
     end
-    attr_reader :deps, :source_index, :logger, :solution
+    attr_reader :dependency_types, :deps, :source_index, :logger, :solution
 
     def resolve
       state = State.initial(self, [], Stack.new, Stack.new([[[], @deps.dup]]))

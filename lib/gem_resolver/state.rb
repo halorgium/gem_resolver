@@ -49,7 +49,7 @@ module GemResolver
     end
 
     def handle_dep(index, dep)
-      specs = @engine.source_index.search(dep)
+      specs = @engine.source_index.search(dep, true)
 
       specs.reverse.each do |s|
         logger.info "attempting with spec: #{s.full_name}"
@@ -58,8 +58,10 @@ module GemResolver
         new_dep_stack = @dep_stack.dup
 
         new_spec_stack[new_path] = s
-        new_dep_stack[new_path] = s.runtime_dependencies.sort_by do |dep|
-          @engine.source_index.search(dep).size
+        new_dep_stack[new_path] = s.dependencies.select do |dep|
+          @engine.dependency_types.include?(dep.type)
+        end.sort_by do |dep|
+          @engine.source_index.search(dep, true).size
         end
         yield child(@engine, new_path, new_spec_stack, new_dep_stack)
       end
@@ -120,6 +122,7 @@ module GemResolver
     end
 
     def dump(level = Logger::DEBUG)
+      return if logger.level > level
       logger.add level, "v" * 80
       logger.add level, "path: #{@path.inspect}"
       logger.add level, "deps: (#{deps.size})"

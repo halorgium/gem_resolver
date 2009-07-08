@@ -9,7 +9,7 @@ require 'gem_resolver/builders'
 require 'gem_resolver/inspects'
 
 module GemResolver
-  def self.resolve(deps, source_index = Gem.source_index, logger = nil)
+  def self.resolve(dependency_types, deps, source_index = Gem.source_index, logger = nil)
     unless logger
       logger = Logger.new($stderr)
       logger.datetime_format = ""
@@ -19,6 +19,6 @@ module GemResolver
                        Logger::ERROR
                      end
     end
-    Engine.resolve(deps, source_index, logger)
+    Engine.resolve(dependency_types, deps, source_index, logger)
   end
 end
